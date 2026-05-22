@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Care - Service Invoice</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            color: #6b7280;
+            font-size: 16px;
+        }
+        .invoice-details {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .invoice-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        .date-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .message {
+            color: #4b5563;
+            margin-bottom: 20px;
+        }
+        .attachment-info {
+            background-color: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .attachment-icon {
+            color: #1e40af;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .contact-info {
+            margin-top: 15px;
+        }
+        .contact-info a {
+            color: #1e40af;
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">FLEET CARE</div>
+            <div class="tagline">Professional Vehicle Services</div>
+        </div>
+
+        <div class="invoice-details">
+            <div class="invoice-number">Invoice #{{ invoice_number }}</div>
+            <div class="date-info">Date: {{ date }}</div>
+        </div>
+
+        <div class="content">
+            <div class="greeting">Dear {{ customer_name }},</div>
+            
+            <div class="message">
+                Thank you for choosing Fleet Care for your vehicle service needs. We're pleased to provide you with the invoice for service request #{{ request_id }}.
+            </div>
+
+            <div class="message">
+                Your invoice has been generated and is attached to this email. Please review the details and let us know if you have any questions.
+            </div>
+
+            <div class="attachment-info">
+                <span class="attachment-icon">📎</span>
+                <strong>Invoice Attachment:</strong> invoice_{{ request_id }}.pdf
+            </div>
+
+            <div class="message">
+                If you have any questions about this invoice or need to discuss payment arrangements, please don't hesitate to contact our customer support team.
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>Thank you for your business!</div>
+            <div class="contact-info">
+                <strong>Fleet Care Support</strong><br>
+                Email: <a href="mailto:support@fleetcare.com">support@fleetcare.com</a><br>
+                Phone: +1 (555) 123-4567<br>
+                Website: <a href="https://fleetcare.com">www.fleetcare.com</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

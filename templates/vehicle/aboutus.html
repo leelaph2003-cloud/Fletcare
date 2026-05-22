@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>About Us - Fleet Care</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="shape-fill"></path></svg>');
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-section h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .hero-section p {
+      font-size: 1.3rem;
+      margin-bottom: 30px;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      color: white;
+      padding: 15px 40px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      color: white;
+      text-decoration: none;
+    }
+
+    .main-content {
+      background: white;
+      padding: 80px 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 60px;
+      color: #2c3e50;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+      margin-bottom: 80px;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      border: 1px solid #f8f9fa;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 25px;
+      font-size: 2rem;
+      color: white;
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+
+    .feature-card p {
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .stats-section {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      padding: 80px 0;
+      margin: 80px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      text-align: center;
+    }
+
+    .stat-item h3 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #3498db;
+    }
+
+    .stat-item p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .brands-section {
+      padding: 60px 0;
+      background: #f8f9fa;
+    }
+
+    .brands-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 30px;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .brand-item {
+      text-align: center;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+
+    .brand-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .brand-item img {
+      max-width: 100%;
+      height: auto;
+      filter: grayscale(100%);
+      transition: filter 0.3s ease;
+    }
+
+    .brand-item:hover img {
+      filter: grayscale(0%);
+    }
+
+    .mission-section {
+      background: white;
+      padding: 80px 0;
+    }
+
+    .mission-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .mission-text h3 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: #2c3e50;
+    }
+
+    .mission-text p {
+      font-size: 1.1rem;
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .mission-image {
+      text-align: center;
+    }
+
+    .mission-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+      .hero-section h1 {
+        font-size: 2.5rem;
+      }
+      
+      .hero-section p {
+        font-size: 1.1rem;
+      }
+      
+      .mission-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  {% include "vehicle/navbar.html" %}
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Welcome to Fleet Care</h1>
+      <p>Your trusted partner for comprehensive vehicle maintenance and repair services. We're committed to keeping your fleet running smoothly with expert mechanics and cutting-edge solutions.</p>
+      <a href="/" class="cta-button">Get Started Today</a>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container">
+      <!-- Features Section -->
+      <h2 class="section-title">Why Choose Fleet Care?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔧</div>
+          <h3>Expert Mechanics</h3>
+          <p>Our certified mechanics have years of experience and are trained to handle all types of vehicles with precision and care.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Quick Service</h3>
+          <p>We understand time is valuable. Our efficient service ensures your vehicle is back on the road as quickly as possible.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3>Affordable Rates</h3>
+          <p>Quality service doesn't have to break the bank. We offer competitive pricing for all our maintenance and repair services.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Digital Solutions</h3>
+          <p>Track your service requests, get real-time updates, and manage your fleet through our advanced digital platform.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚗</div>
+          <h3>All Vehicle Types</h3>
+          <p>From cars and bikes to commercial vehicles, we service all makes and models with the same level of expertise.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3>Warranty Assured</h3>
+          <p>All our services come with comprehensive warranties, giving you peace of mind and confidence in our work.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <h3>1000+</h3>
+          <p>Happy Customers</p>
+        </div>
+        <div class="stat-item">
+          <h3>500+</h3>
+          <p>Vehicles Serviced</p>
+        </div>
+        <div class="stat-item">
+          <h3>50+</h3>
+          <p>Expert Mechanics</p>
+        </div>
+        <div class="stat-item">
+          <h3>24/7</h3>
+          <p>Support Available</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission Section -->
+  <section class="mission-section">
+    <div class="container">
+      <div class="mission-content">
+        <div class="mission-text">
+          <h3>Our Mission</h3>
+          <p>At Fleet Care, we're driven by a simple mission: to provide exceptional vehicle maintenance and repair services that exceed customer expectations.</p>
+          <p>We believe in building lasting relationships with our customers through transparency, reliability, and superior service quality. Every vehicle we service is treated with the same care and attention as if it were our own.</p>
+          <p>Our team of skilled professionals is committed to staying updated with the latest automotive technologies and industry best practices, ensuring your vehicle receives the most advanced and effective solutions available.</p>
+        </div>
+        <div class="mission-image">
+          <img src="{% static 'images/ferrari.png' %}" alt="Fleet Care Mission" style="max-width: 300px;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brands Section -->
+  <section class="brands-section">
+    <div class="container">
+      <h2 class="section-title">Trusted by Leading Brands</h2>
+      <div class="brands-grid">
+        <div class="brand-item">
+          <img src="{% static 'images/ferrari.png' %}" alt="Ferrari" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/ford.png' %}" alt="Ford" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/lambo.png' %}" alt="Lamborghini" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/mahindra.png' %}" alt="Mahindra" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/tvs.png' %}" alt="TVS" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/tata.png' %}" alt="Tata" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/hero.png' %}" alt="Hero" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/rolls.png' %}" alt="Rolls Royce" />
+        </div>
+        <div class="brand-item">
+          <img src="{% static 'images/suzuki.png' %}" alt="Suzuki" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include "vehicle/footer.html" %}
+</body>
+
+</html>

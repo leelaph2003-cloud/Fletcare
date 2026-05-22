@@ -1,0 +1,857 @@
+{% extends 'vehicle/adminbase.html' %}
+{% block content %}
+
+<div class="location-tracking-container">
+    <!-- Header Section -->
+    <div class="tracking-header">
+        <h1><i class="fas fa-map-marked-alt"></i> Location Tracking Dashboard</h1>
+        <p>Monitor customer and mechanic locations in real-time</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ location_stats.total_customers }}</h3>
+                <p>Total Customers</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ location_stats.total_mechanics }}</h3>
+                <p>Total Mechanics</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-map-pin"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ location_stats.tracked_customers }}</h3>
+                <p>Tracked Customers</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ location_stats.tracked_mechanics }}</h3>
+                <p>Tracked Mechanics</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coverage Analysis -->
+    <div class="coverage-section">
+        <h2><i class="fas fa-chart-pie"></i> Service Area Coverage</h2>
+        <div class="coverage-grid">
+            <div class="coverage-card">
+                <h4>Customer Coverage</h4>
+                <div class="coverage-bar">
+                    <div class="coverage-fill" style="width: {{ location_stats.tracking_coverage_customers }}%"></div>
+                </div>
+                <p>{{ location_stats.tracking_coverage_customers|floatformat:1 }}% tracked</p>
+            </div>
+            
+            <div class="coverage-card">
+                <h4>Mechanic Coverage</h4>
+                <div class="coverage-bar">
+                    <div class="coverage-fill" style="width: {{ location_stats.tracking_coverage_mechanics }}%"></div>
+                </div>
+                <p>{{ location_stats.tracking_coverage_mechanics|floatformat:1 }}% tracked</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Update Forms -->
+    <div class="update-forms">
+        <div class="form-section">
+            <h3><i class="fas fa-user-edit"></i> Update Customer Location</h3>
+            <form method="post" class="location-form">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer:</label>
+                        <select name="customer_id" required>
+                            <option value="">Select Customer</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.get_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Latitude:</label>
+                        <input type="number" step="0.000001" name="latitude" placeholder="e.g., 12.9716" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude:</label>
+                        <input type="number" step="0.000001" name="longitude" placeholder="e.g., 77.5946" required>
+                    </div>
+                </div>
+                <button type="submit" name="update_customer" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Customer Location
+                </button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-tools"></i> Update Mechanic Location</h3>
+            <form method="post" class="location-form">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mechanic:</label>
+                        <select name="mechanic_id" required>
+                            <option value="">Select Mechanic</option>
+                            {% for mechanic in mechanics %}
+                            <option value="{{ mechanic.id }}">{{ mechanic.get_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Latitude:</label>
+                        <input type="number" step="0.000001" name="latitude" placeholder="e.g., 12.9716" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude:</label>
+                        <input type="number" step="0.000001" name="longitude" placeholder="e.g., 77.5946" required>
+                    </div>
+                </div>
+                <button type="submit" name="update_mechanic" class="btn btn-success">
+                    <i class="fas fa-save"></i> Update Mechanic Location
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Nearest Mechanics Finder -->
+    <div class="finder-section">
+        <h3><i class="fas fa-search-location"></i> Find Nearest Mechanics</h3>
+        <form method="post" class="finder-form">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Customer Location:</label>
+                    <input type="number" step="0.000001" name="customer_lat" placeholder="Latitude" required>
+                </div>
+                <div class="form-group">
+                    <label></label>
+                    <input type="number" step="0.000001" name="customer_lon" placeholder="Longitude" required>
+                </div>
+                <div class="form-group">
+                    <label>Search Radius (km):</label>
+                    <input type="number" name="radius" value="50" min="1" max="100" step="1">
+                </div>
+            </div>
+            <button type="submit" name="find_mechanics" class="btn btn-info">
+                <i class="fas fa-search"></i> Find Nearest Mechanics
+            </button>
+        </form>
+
+        {% if nearest_mechanics %}
+        <div class="results-section">
+            <h4>Nearest Available Mechanics:</h4>
+            <div class="mechanics-grid">
+                {% for mechanic, distance in nearest_mechanics %}
+                <div class="mechanic-card">
+                    <div class="mechanic-avatar">
+                        {% if mechanic.profile_pic %}
+                        <img src="{{ mechanic.profile_pic.url }}" alt="{{ mechanic.get_name }}">
+                        {% else %}
+                        <i class="fas fa-user-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="mechanic-info">
+                        <h5>{{ mechanic.get_name }}</h5>
+                        <p><i class="fas fa-map-marker-alt"></i> {{ distance|floatformat:1 }} km away</p>
+                        <p><i class="fas fa-wrench"></i> {{ mechanic.skill }}</p>
+                        <p><i class="fas fa-phone"></i> {{ mechanic.mobile }}</p>
+                    </div>
+                    <div class="mechanic-actions">
+                        <button class="btn btn-sm btn-primary" onclick="openCallBot('{{ mechanic.mobile }}', '{{ mechanic.get_name }}')">
+                            <i class="fas fa-phone"></i> Call Bot
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="openNavigation('{{ mechanic.current_latitude }},{{ mechanic.current_longitude }}', '{{ mechanic.get_name }}')">
+                            <i class="fas fa-route"></i> Navigate
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Call Bot Modal -->
+<div id="callBotModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-robot"></i> Professional Call Bot</h3>
+            <span class="close" onclick="closeCallBotModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="call-options">
+                <div class="call-option">
+                    <h4>Direct Call</h4>
+                    <p>Connect directly to the mechanic</p>
+                    <button class="btn btn-primary" onclick="makeDirectCall()">
+                        <i class="fas fa-phone"></i> Call Now
+                    </button>
+                </div>
+                
+                <div class="call-option">
+                    <h4>Automated Message</h4>
+                    <p>Send a pre-written message</p>
+                    <select id="messageType" class="form-control">
+                        <option value="urgent">Urgent Service Request</option>
+                        <option value="scheduled">Scheduled Appointment</option>
+                        <option value="followup">Follow-up Call</option>
+                        <option value="emergency">Emergency Breakdown</option>
+                    </select>
+                    <button class="btn btn-success" onclick="sendAutomatedMessage()">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </div>
+                
+                <div class="call-option">
+                    <h4>Schedule Call</h4>
+                    <p>Set a reminder for later</p>
+                    <input type="datetime-local" id="callSchedule" class="form-control">
+                    <button class="btn btn-info" onclick="scheduleCall()">
+                        <i class="fas fa-calendar-plus"></i> Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Modal -->
+<div id="navigationModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-route"></i> Navigation Options</h3>
+            <span class="close" onclick="closeNavigationModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="navigation-options">
+                <div class="nav-option">
+                    <h4>Google Maps</h4>
+                    <p>Open in Google Maps app/website</p>
+                    <button class="btn btn-primary" onclick="openGoogleMaps()">
+                        <i class="fab fa-google"></i> Google Maps
+                    </button>
+                </div>
+                
+                <div class="nav-option">
+                    <h4>Apple Maps</h4>
+                    <p>Open in Apple Maps (iOS devices)</p>
+                    <button class="btn btn-success" onclick="openAppleMaps()">
+                        <i class="fas fa-map"></i> Apple Maps
+                    </button>
+                </div>
+                
+                <div class="nav-option">
+                    <h4>Waze</h4>
+                    <p>Open in Waze navigation app</p>
+                    <button class="btn btn-info" onclick="openWaze()">
+                        <i class="fas fa-car"></i> Waze
+                    </button>
+                </div>
+                
+                <div class="nav-option">
+                    <h4>Coordinates</h4>
+                    <p>Copy coordinates for manual input</p>
+                    <div class="coordinate-display">
+                        <span id="coordinateText"></span>
+                        <button class="btn btn-secondary" onclick="copyCoordinates()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <style>
+.location-tracking-container {
+    padding: 2rem;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.tracking-header {
+            text-align: center;
+            margin-bottom: 2rem;
+    color: #1f2937;
+        }
+        
+.tracking-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+    color: #1e40af;
+        }
+        
+.tracking-header p {
+            font-size: 1.1rem;
+    color: #6b7280;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+    padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+    transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+    font-size: 2.5rem;
+    color: #3b82f6;
+            width: 60px;
+    text-align: center;
+}
+
+.stat-content h3 {
+    font-size: 2rem;
+    margin: 0;
+    color: #1f2937;
+}
+
+.stat-content p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.coverage-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.coverage-section h2 {
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+    gap: 0.5rem;
+}
+
+.coverage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.coverage-card {
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.coverage-card h4 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+}
+
+.coverage-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+.coverage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    transition: width 0.3s ease;
+}
+
+.update-forms {
+            display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+.form-section {
+            background: white;
+    padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+.form-section h3 {
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+    gap: 0.5rem;
+}
+
+.location-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+            font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-info {
+    background: #06b6d4;
+            color: white;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+}
+
+.finder-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.finder-section h3 {
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.finder-form {
+    margin-bottom: 2rem;
+}
+
+.mechanics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.mechanic-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+}
+
+.mechanic-avatar {
+    width: 60px;
+    height: 60px;
+            border-radius: 50%;
+    overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+    background: #f3f4f6;
+}
+
+.mechanic-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mechanic-avatar i {
+    font-size: 2rem;
+    color: #9ca3af;
+}
+
+.mechanic-info {
+            flex: 1;
+        }
+        
+.mechanic-info h5 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+}
+
+.mechanic-info p {
+    margin: 0.25rem 0;
+    color: #6b7280;
+            font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mechanic-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .location-tracking-container {
+        padding: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .update-forms {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .mechanics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    margin: auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.close {
+    color: #9ca3af;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #374151;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.call-options,
+.navigation-options {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.call-option,
+.nav-option {
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+.call-option h4,
+.nav-option h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1.1rem;
+}
+
+.call-option p,
+.nav-option p {
+    margin: 0 0 1rem 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.coordinate-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+            background: white;
+    padding: 0.75rem;
+    border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        
+.coordinate-display span {
+    font-family: monospace;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.btn-secondary {
+    background: #6b7280;
+            color: white;
+        }
+        
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+</style>
+
+<script>
+// Global variables for modals
+let currentPhoneNumber = '';
+let currentCoordinates = '';
+let currentMechanicName = '';
+
+// Call Bot Functions
+function openCallBot(phoneNumber, mechanicName) {
+    currentPhoneNumber = phoneNumber;
+    currentMechanicName = mechanicName;
+    document.getElementById('callBotModal').style.display = 'block';
+}
+
+function closeCallBotModal() {
+    document.getElementById('callBotModal').style.display = 'none';
+}
+
+function makeDirectCall() {
+    if (currentPhoneNumber) {
+        window.open(`tel:${currentPhoneNumber}`, '_blank');
+        closeCallBotModal();
+    }
+}
+
+function sendAutomatedMessage() {
+    const messageType = document.getElementById('messageType').value;
+    const messages = {
+        urgent: `Hi, this is Fleet Care. We have an urgent service request for you. Please call us back at your earliest convenience.`,
+        scheduled: `Hi, this is Fleet Care. We have a scheduled appointment reminder. Please confirm your availability.`,
+        followup: `Hi, this is Fleet Care. We're following up on your recent service. How is everything working?`,
+        emergency: `Hi, this is Fleet Care. We have an emergency breakdown situation. Please call us immediately.`
+    };
+    
+    const message = messages[messageType];
+    if (message && currentPhoneNumber) {
+        // In a real app, this would send an SMS or WhatsApp message
+        alert(`Message prepared for ${currentMechanicName}:\n\n${message}`);
+        closeCallBotModal();
+    }
+}
+
+function scheduleCall() {
+    const scheduleTime = document.getElementById('callSchedule').value;
+    if (scheduleTime && currentPhoneNumber) {
+        alert(`Call scheduled for ${currentMechanicName} at ${scheduleTime}`);
+        closeCallBotModal();
+    } else {
+        alert('Please select a date and time');
+    }
+}
+
+// Navigation Functions
+function openNavigation(coordinates, mechanicName) {
+    currentCoordinates = coordinates;
+    currentMechanicName = mechanicName;
+    document.getElementById('coordinateText').textContent = coordinates;
+    document.getElementById('navigationModal').style.display = 'block';
+}
+
+function closeNavigationModal() {
+    document.getElementById('navigationModal').style.display = 'none';
+}
+
+function openGoogleMaps() {
+    if (currentCoordinates) {
+        window.open(`https://www.google.com/maps?q=${currentCoordinates}`, '_blank');
+        closeNavigationModal();
+    }
+}
+
+function openAppleMaps() {
+    if (currentCoordinates) {
+        // Apple Maps URL scheme
+        window.open(`http://maps.apple.com/?q=${currentCoordinates}`, '_blank');
+        closeNavigationModal();
+    }
+}
+
+function openWaze() {
+    if (currentCoordinates) {
+        // Waze URL scheme
+        window.open(`https://waze.com/ul?ll=${currentCoordinates}&navigate=yes`, '_blank');
+        closeNavigationModal();
+    }
+}
+
+function copyCoordinates() {
+    if (currentCoordinates) {
+        navigator.clipboard.writeText(currentCoordinates).then(() => {
+            alert('Coordinates copied to clipboard!');
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = currentCoordinates;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('Coordinates copied to clipboard!');
+        });
+    }
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const callBotModal = document.getElementById('callBotModal');
+    const navigationModal = document.getElementById('navigationModal');
+    
+    if (event.target == callBotModal) {
+        closeCallBotModal();
+    }
+    if (event.target == navigationModal) {
+        closeNavigationModal();
+    }
+}
+
+// Auto-refresh location data every 30 seconds
+        setInterval(function() {
+    // You can implement AJAX refresh here
+    console.log('Refreshing location data...');
+}, 30000);
+    </script>
+
+{% endblock content %} 

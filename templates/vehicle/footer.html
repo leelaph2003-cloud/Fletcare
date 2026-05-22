@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    footer {
+      background: var(--primary-color);
+      color: white;
+      padding: 60px 0 20px 0;
+      margin: 0;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: white;
+    }
+
+    .footer-section p {
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-section ul li a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section ul li a:hover {
+      color: white;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-decoration: none;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .social-link:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      color: white;
+      text-decoration: none;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 20px;
+      text-align: center;
+    }
+
+    .footer-bottom p {
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+
+    .contact-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .contact-info i {
+      margin-right: 0.5rem;
+      width: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .social-links {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h3>Fleet Care</h3>
+      <p>Professional vehicle maintenance and repair services. We provide comprehensive solutions for all your automotive needs with expert mechanics and quality assurance.</p>
+      <div class="social-links">
+        <a href="https://facebook.com/" class="social-link" title="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://api.whatsapp.com/send?phone=919572181024&text=Hello%20Sumit.%0d%0aHow%20are%20you%20%3f%0d%0aI%20came%20from%20your%20website.&source=&data=#" class="social-link" title="WhatsApp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="https://instagram.com/" class="social-link" title="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://twitter.com/" class="social-link" title="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-section">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/aboutus">About Us</a></li>
+        <li><a href="/contactus">Contact Us</a></li>
+        <li><a href="/customerclick">Customer Portal</a></li>
+        <li><a href="/mechanicsclick">Mechanic Portal</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h3>Services</h3>
+      <ul>
+        <li><a href="#">Vehicle Maintenance</a></li>
+        <li><a href="#">Engine Repair</a></li>
+        <li><a href="#">Brake Service</a></li>
+        <li><a href="#">Oil Change</a></li>
+        <li><a href="#">Tire Service</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h3>Contact Info</h3>
+      <div class="contact-info">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Yelahanka, Bangalore</span>
+      </div>
+      <div class="contact-info">
+        <i class="fas fa-phone"></i>
+        <span>+91 9902275182</span>
+      </div>
+      <div class="contact-info">
+        <i class="fas fa-envelope"></i>
+        <span>fleetcare09@gmail.com</span>
+      </div>
+      <div class="contact-info">
+        <i class="fas fa-clock"></i>
+        <span>Mon-Fri: 8AM-6PM, Sat: 9AM-4PM</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2025 Fleet Care. Made in India. All rights reserved.</p>
+  </div>
+</footer>
+
+</html>

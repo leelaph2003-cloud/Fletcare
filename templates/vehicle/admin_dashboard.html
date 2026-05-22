@@ -1,0 +1,256 @@
+{% extends 'vehicle/adminbase.html' %}
+{% load static %}
+{% block content %}
+
+	<!-- main content -->
+	<div class="wrapper">
+
+		<!-- Logout Button -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-content">
+						<div class="d-flex justify-content-between align-items-center">
+							<h3><i class="fas fa-user-shield"></i> Admin Dashboard</h3>
+							<a href="/logout" class="btn btn-danger">
+								<i class="fas fa-sign-out-alt"></i> Logout
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+<!-- ****** cards start ********** -->
+		<div class="row">
+			<div class="col-3 col-m-6 col-sm-6">
+				<div class="counter bg-primary">
+					<i class="fas fa-users"></i>
+					<h3>{{total_customer}}</h3>
+					<p>Total Customers</p>
+				</div>
+			</div>
+			<div class="col-3 col-m-6 col-sm-6">
+				<div class="counter bg-warning">
+					<i class="fas fa-tools"></i>
+					<h3>{{total_mechanic}}</h3>
+					<p>Total Mechanics</p>
+				</div>
+			</div>
+			<div class="col-3 col-m-6 col-sm-6">
+				<div class="counter bg-success">
+					<i class="fas fa-clipboard-list"></i>
+					<h3>{{total_request}}</h3>
+					<p>Total Requests</p>
+				</div>
+			</div>
+			<div class="col-3 col-m-6 col-sm-6">
+				<div class="counter bg-danger">
+					<i class="fas fa-comments"></i>
+					<h3>{{total_feedback}}</h3>
+					<p>Total Feedback</p>
+				</div>
+			</div>
+		</div>
+<!-- ****** cards end ********** -->
+
+		<!-- KNN Service Area Statistics -->
+		<div class="row" style="margin-top: 2rem;">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-header">
+						<h3><i class="fas fa-map-marked-alt"></i> KNN Service Area Analytics</h3>
+					</div>
+					<div class="card-content">
+						<div class="row">
+							<div class="col-3 col-m-6 col-sm-6">
+								<div class="counter bg-info">
+									<i class="fas fa-map-marker-alt"></i>
+									<h3>{{location_stats.tracked_mechanics}}</h3>
+									<p>Tracked Mechanics</p>
+								</div>
+							</div>
+							<div class="col-3 col-m-6 col-sm-6">
+								<div class="counter bg-success">
+									<i class="fas fa-users"></i>
+									<h3>{{location_stats.tracked_customers}}</h3>
+									<p>Tracked Customers</p>
+								</div>
+							</div>
+							<div class="col-3 col-m-6 col-sm-6">
+								<div class="counter bg-warning">
+									<i class="fas fa-route"></i>
+									<h3>{{location_stats.average_service_area_coverage}}</h3>
+									<p>Avg Service Area</p>
+								</div>
+							</div>
+							<div class="col-3 col-m-6 col-sm-6">
+								<div class="counter bg-primary">
+									<i class="fas fa-chart-pie"></i>
+									<h3>{{location_stats.mechanics_with_service_areas}}</h3>
+									<p>Active Service Areas</p>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-3">
+							<div class="col-6">
+								<div class="alert alert-info">
+									<strong>Mechanic Tracking Coverage:</strong> {{location_stats.tracking_coverage_mechanics|floatformat:1}}%
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="alert alert-success">
+									<strong>Customer Tracking Coverage:</strong> {{location_stats.tracking_coverage_customers|floatformat:1}}%
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+<!-- ****** Quick Actions Section ********** -->
+		<div class="row" style="margin-top: 2rem;">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-header">
+						<h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+					</div>
+					<div class="card-content">
+						<div class="row">
+							<div class="col-3 col-m-6 col-sm-6">
+								<a href="{% url 'admin-location-tracking' %}" class="btn btn-primary btn-lg w-100">
+									<i class="fas fa-map-marker-alt"></i> Location Tracking
+								</a>
+							</div>
+							<div class="col-3 col-m-6 col-sm-6">
+								<a href="{% url 'admin-view-customer' %}" class="btn btn-info btn-lg w-100">
+									<i class="fas fa-users"></i> Manage Customers
+								</a>
+							</div>
+							<div class="col-3 col-m-6 col-sm-6">
+								<a href="{% url 'admin-view-mechanic' %}" class="btn btn-warning btn-lg w-100">
+									<i class="fas fa-tools"></i> Manage Mechanics
+								</a>
+							</div>
+							<div class="col-3 col-m-6 col-sm-6">
+								<a href="{% url 'admin-view-request' %}" class="btn btn-success btn-lg w-100">
+									<i class="fas fa-clipboard-list"></i> View Requests
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Nearest Service Shops Section -->
+		{% if nearest_mechanics %}
+		<div class="row" style="margin-top: 2rem;">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-header">
+						<h3><i class="fas fa-map-marker-alt"></i> Nearest Service Shops (KNN Algorithm)</h3>
+					</div>
+					<div class="card-content">
+						<div class="table-responsive">
+							<table>
+								<thead>
+									<tr>
+										<th>Mechanic Name</th>
+										<th>Mobile</th>
+										<th>Address</th>
+										<th>Distance</th>
+										<th>Status</th>
+										<th>Service Area</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for mechanic, distance in nearest_mechanics %}
+									<tr>
+										<td><strong>{{mechanic.get_name}}</strong></td>
+										<td>{{mechanic.mobile}}</td>
+										<td>{{mechanic.address}}</td>
+										<td>
+											<span class="badge {% if distance <= 10 %}bg-success{% elif distance <= 25 %}bg-warning{% else %}bg-info{% endif %}">
+												{{distance|floatformat:1}} km
+											</span>
+										</td>
+										<td>
+											{% if mechanic.is_available %}
+												<span class="badge bg-success">Available</span>
+											{% else %}
+												<span class="badge bg-danger">Busy</span>
+											{% endif %}
+										</td>
+										<td>
+											{% if mechanic.current_latitude and mechanic.current_longitude %}
+												<span class="badge bg-primary">Tracked</span>
+											{% else %}
+												<span class="badge bg-secondary">Not Tracked</span>
+											{% endif %}
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+						<div class="text-center mt-3">
+							<a href="{% url 'admin-location-tracking' %}" class="btn btn-primary">
+								<i class="fas fa-eye"></i> View All Location Data
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+
+<!-- ****** table  start ********** -->
+		<div class="row">
+			<div class="col-12 col-m-12 col-sm-12">
+				<div class="card">
+					<div class="card-header">
+						<h3><i class="fas fa-clock"></i> Recent Requests By Customers</h3>
+					</div>
+					<div class="card-content">
+						{% if data %}
+						<table>
+							<thead>
+								<tr>
+									<th>Customer Name</th>
+									<th>Vehicle Name</th>
+									<th>Category</th>
+									<th>Vehicle Model</th>
+									<th>Vehicle Brand</th>
+									<th>Problem Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for c,r in data %}
+								<tr>
+									<td><strong>{{c.get_name}}</strong></td>
+									<td>{{r.vehicle_name}}</td>
+									<td><span class="badge bg-primary">{{r.category}}</span></td>
+									<td>{{r.vehicle_model}}</td>
+									<td>{{r.vehicle_brand}}</td>
+									<td>{{r.problem_description}}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+						{% else %}
+						<div class="text-center" style="padding: 40px;">
+							<i class="fas fa-inbox" style="font-size: 48px; color: var(--second-color); margin-bottom: 16px;"></i>
+							<p style="color: var(--second-color); font-size: 18px;">No recent requests found</p>
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+<!-- ****** table end ********** -->
+
+	</div>
+	<!-- end main content -->
+{% endblock content %}

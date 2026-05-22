@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracking - Vehicle Breakdown Assistance System</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .tracking-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .tracking-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .tracking-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .tracking-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .location-status {
+            background: var(--light-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .location-status h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .coordinates {
+            font-family: monospace;
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            display: inline-block;
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+        
+        .status-available {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .status-busy {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .customers-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .customers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .customer-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .customer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .customer-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .customer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .customer-info h4 {
+            margin: 0;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+        
+        .customer-info p {
+            margin: 0.25rem 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .distance-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .customer-details {
+            margin: 1rem 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .detail-item i {
+            width: 16px;
+            color: var(--primary-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-navigate {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-navigate:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn-call {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-call:hover {
+            background: var(--success-dark);
+            transform: translateY(-1px);
+        }
+        
+        .no-customers {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .no-customers i {
+            font-size: 4rem;
+            color: var(--light-color);
+            margin-bottom: 1rem;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--light-color);
+            color: var(--text-dark);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .back-button:hover {
+            background: var(--text-muted);
+            color: white;
+        }
+        
+        .toggle-availability {
+            background: var(--warning-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 1rem 0;
+        }
+        
+        .toggle-availability:hover {
+            background: var(--warning-dark);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="tracking-container">
+        <a href="{% url 'mechanic-dashboard' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+        
+        <div class="tracking-header">
+            <h1 class="tracking-title">Location Tracking</h1>
+            <p class="tracking-subtitle">Track your location and find nearby customers</p>
+        </div>
+        
+        <div class="location-status">
+            <h3><i class="fas fa-map-marker-alt"></i> Your Current Location</h3>
+            <div class="coordinates">
+                Lat: {{ current_location.latitude|floatformat:6 }}, Lon: {{ current_location.longitude|floatformat:6 }}
+            </div>
+            <div class="status-indicator {% if mechanic.is_available %}status-available{% else %}status-busy{% endif %}">
+                <i class="fas fa-circle"></i>
+                {% if mechanic.is_available %}Available for Service{% else %}Currently Busy{% endif %}
+            </div>
+            <button class="toggle-availability" onclick="toggleAvailability()">
+                {% if mechanic.is_available %}
+                    <i class="fas fa-pause"></i> Set as Busy
+                {% else %}
+                    <i class="fas fa-play"></i> Set as Available
+                {% endif %}
+            </button>
+        </div>
+        
+        <div class="customers-section">
+            <h2 class="section-title">
+                <i class="fas fa-users"></i>
+                Nearby Customers ({{ nearby_customers|length }})
+            </h2>
+            
+            {% if nearby_customers %}
+                <div class="customers-grid">
+                    {% for customer, distance in nearby_customers %}
+                    <div class="customer-card">
+                        <div class="customer-header">
+                            <div class="customer-avatar">
+                                {% if customer.profile_pic %}
+                                    <img src="{{ customer.profile_pic.url }}" alt="{{ customer.get_name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                {% else %}
+                                    <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div class="customer-info">
+                                <h4>{{ customer.get_name }}</h4>
+                                <p>{{ customer.address }}</p>
+                            </div>
+                            <div class="distance-badge">
+                                {{ distance|floatformat:1 }} km
+                            </div>
+                        </div>
+                        
+                        <div class="customer-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>{{ customer.mobile }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ customer.address }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <a href="https://maps.google.com/?q={{ customer.current_latitude }},{{ customer.current_longitude }}" 
+                               target="_blank" class="btn-navigate">
+                                <i class="fas fa-directions"></i> Navigate
+                            </a>
+                            <a href="tel:{{ customer.mobile }}" class="btn-call">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-customers">
+                    <i class="fas fa-search"></i>
+                    <h3>No Customers Nearby</h3>
+                    <p>There are no customers within 50km of your location.</p>
+                    <p>Your location is being tracked and you'll be notified of nearby service requests.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        function toggleAvailability() {
+            if (confirm('Are you sure you want to change your availability status?')) {
+                // This would typically make an AJAX call to update the mechanic's availability
+                // For now, we'll just reload the page
+                window.location.reload();
+            }
+        }
+        
+        // Auto-refresh location every 30 seconds
+        setInterval(function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    updateLocation(position.coords.latitude, position.coords.longitude);
+                });
+            }
+        }, 30000);
+        
+        function updateLocation(lat, lon) {
+            fetch('/update-mechanic-location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    mechanic_id: {{ mechanic.id }},
+                    latitude: lat,
+                    longitude: lon
+                })
+            });
+        }
+        
+        // Initial location update
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                updateLocation(position.coords.latitude, position.coords.longitude);
+            });
+        }
+    </script>
+</body>
+</html> 
