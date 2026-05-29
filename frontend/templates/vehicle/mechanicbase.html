@@ -26,7 +26,7 @@
 				</a>
 			</li>
 			<li class="nav-item">
-			<a style="text-decoration:none;"href="/customer-dashboard"><h3>Fleet Care</h3></a>
+				<a style="text-decoration:none;"href="/mechanic-dashboard"><h3>Fleet Care</h3></a>
 			</li>
 		</ul>
 		<!-- end nav left -->
@@ -47,8 +47,8 @@
 
 			<li class="nav-item avt-wrapper">
 				<div class="avt dropdown">
-					{% if customer.profile_pic %}
-						<img src="{{ customer.profile_pic.url }}" alt="User image" class="dropdown-toggle" data-toggle="user-menu">
+					{% if mechanic.profile_pic %}
+						<img src="{{ mechanic.profile_pic.url }}" alt="User image" class="dropdown-toggle" data-toggle="user-menu">
 					{% else %}
 						<div class="avatar-placeholder dropdown-toggle" data-toggle="user-menu">
 							<i class="fas fa-user-circle"></i>
@@ -57,7 +57,7 @@
 					<ul id="user-menu" class="dropdown-menu">
 
 						<li  class="dropdown-menu-item">
-							<a href="/customer-profile" class="dropdown-menu-link">
+							<a href="/mechanic-profile" class="dropdown-menu-link">
 								<div>
 									<i class="fas fa-user-tie"></i>
 								</div>
@@ -90,7 +90,7 @@
 		<ul class="sidebar-nav">
 
 			<li class="sidebar-nav-item">
-				<a href="/customer-dashboard" class="sidebar-nav-link">
+				<a href="/mechanic-dashboard" class="sidebar-nav-link">
 					<div>
 						<i class="fas fa-tachometer-alt"></i>
 					</div>
@@ -101,25 +101,34 @@
 			</li>
 
 			<li  class="sidebar-nav-item">
-				<a href="/customer-request" class="sidebar-nav-link">
+				<a href="/mechanic-work-assigned" class="sidebar-nav-link">
 					<div>
 						<i class="fas fa-spinner"></i>
 					</div>
-					<span>Request</span>
+					<span>Work Assigned</span>
 				</a>
 			</li>
 
 			<li  class="sidebar-nav-item">
-				<a href="/customer-invoice" class="sidebar-nav-link">
+				<a href="/mechanic-salary" class="sidebar-nav-link">
 					<div>
 						<i class="fas fa-rupee-sign"></i>
 					</div>
-					<span>Invoice</span>
+					<span>Salary</span>
 				</a>
 			</li>
 
 			<li  class="sidebar-nav-item">
-				<a href="/customer-feedback" class="sidebar-nav-link">
+				<a href="/mechanic-attendance" class="sidebar-nav-link">
+					<div>
+						<i class="fas fa-calendar-week"></i>
+					</div>
+					<span>Attendance</span>
+				</a>
+			</li>
+
+			<li  class="sidebar-nav-item">
+				<a href="/mechanic-feedback" class="sidebar-nav-link">
 					<div>
 					<i class="fas fa-comments"></i>
 					</div>
@@ -128,7 +137,7 @@
 			</li>
 
 			<li  class="sidebar-nav-item">
-				<a href="/customer-profile" class="sidebar-nav-link">
+				<a href="/mechanic-profile" class="sidebar-nav-link">
 					<div>
 					<i class="fas fa-user-tie"></i>
 					</div>
@@ -163,6 +172,65 @@
 	<!-- import script -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 	<script src="{% static "index.js" %}"></script>
+	
+	{% if request.user.is_authenticated and request.user.mechanic %}
+	<script>
+		(function() {
+			if ("geolocation" in navigator) {
+				let lastUpdate = 0;
+				let lastLat = null;
+				let lastLon = null;
+				
+				function sendLocation(lat, lon) {
+					const now = Date.now();
+					const timePassed = now - lastUpdate;
+					const distanceChanged = lastLat === null || Math.abs(lat - lastLat) > 0.0001 || Math.abs(lon - lastLon) > 0.0001;
+					
+					// Update if 30 seconds have passed, or 5 seconds if they moved > 10m
+					if (timePassed > 30000 || (distanceChanged && timePassed > 5000)) {
+						lastUpdate = now;
+						lastLat = lat;
+						lastLon = lon;
+						
+						fetch('{% url "update-mechanic-location" %}', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+								'X-CSRFToken': '{{ csrf_token }}'
+							},
+							body: JSON.stringify({
+								mechanic_id: {{ request.user.mechanic.id }},
+								latitude: lat,
+								longitude: lon
+							})
+						})
+						.then(response => response.json())
+						.then(data => {
+							console.log("Mechanic live tracking auto-updated:", data);
+						})
+						.catch(err => {
+							console.warn("Live tracking update failed:", err);
+						});
+					}
+				}
+
+				navigator.geolocation.watchPosition(
+					function(position) {
+						sendLocation(position.coords.latitude, position.coords.longitude);
+					},
+					function(error) {
+						console.warn("Live tracking geolocation error:", error.message);
+					},
+					{
+						enableHighAccuracy: true,
+						timeout: 15000,
+						maximumAge: 0
+					}
+				);
+			}
+		})();
+	</script>
+	{% endif %}
 	<!-- end import script -->
 </body>
 </html>

@@ -14,9 +14,9 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE_DIR = os.path.join(BASE_DIR,'templates')
-STATIC_DIR=os.path.join(BASE_DIR,'static')
-MEDIA_ROOT=os.path.join(BASE_DIR,'static')
+TEMPLATE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'frontend', 'templates')
+STATIC_DIR = os.path.join(os.path.dirname(BASE_DIR), 'frontend', 'static')
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'frontend', 'static')
 
 
 # Quick-start development settings - unsuitable for production
@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'vehicleservicemanagement.wsgi.application'
 DATABASES = {
  'default': {
      'ENGINE': 'django.db.backends.sqlite3',
-     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+     'NAME': os.path.join(os.path.dirname(BASE_DIR), 'database', 'db.sqlite3'),
  }
 }
 
