@@ -1,13 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-# Create your models here.
+
 class Customer(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE)
     profile_pic= models.ImageField(upload_to='profile_pic/CustomerProfilePic/',null=True,blank=True)
     address = models.CharField(max_length=40)
     mobile = models.CharField(max_length=20,null=False)
-    # Location fields for KNN algorithm
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, 
                                  validators=[MinValueValidator(-90), MaxValueValidator(90)])
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True,
@@ -35,7 +34,6 @@ class Mechanic(models.Model):
     skill = models.CharField(max_length=500,null=True)
     salary=models.PositiveIntegerField(null=True)
     status=models.BooleanField(default=False)
-    # Location fields for KNN algorithm and tracking
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True,
                                  validators=[MinValueValidator(-90), MaxValueValidator(90)])
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True,
@@ -62,7 +60,9 @@ class Request(models.Model):
     cat=(('two wheeler with gear','two wheeler with gear'),('two wheeler without gear','two wheeler without gear'),('three wheeler','three wheeler'),('four wheeler','four wheeler'))
     category=models.CharField(max_length=50,choices=cat)
 
-    vehicle_no=models.PositiveIntegerField(null=False)
+    # FIX 13: vehicle_no changed from PositiveIntegerField to CharField
+    # because vehicle registration numbers are alphanumeric (e.g. "KA01AB1234")
+    vehicle_no=models.CharField(max_length=20, null=False)
     vehicle_name = models.CharField(max_length=40,null=False)
     vehicle_model = models.CharField(max_length=40,null=False)
     vehicle_brand = models.CharField(max_length=40,null=False)
