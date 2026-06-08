@@ -1,0 +1,141 @@
+{% extends 'vehicle/adminbase.html' %}
+{% load static %}
+{% block content %}
+
+	<!-- main content -->
+	<div class="wrapper">
+
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-content">
+						<h3><i class="fas fa-user-edit"></i> Admin Profile</h3>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Messages -->
+		{% if messages %}
+		<div class="row">
+			<div class="col-12">
+				{% for message in messages %}
+				<div class="alert alert-{{ message.tags }}" style="padding: 12px 20px; border-radius: 8px; margin-bottom: 10px;
+					{% if message.tags == 'success' %}background-color: #d4edda; color: #155724; border-left: 4px solid #28a745;{% endif %}
+					{% if message.tags == 'error' %}background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545;{% endif %}">
+					{{ message }}
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+
+		<div class="row">
+			<!-- Current Details Card -->
+			<div class="col-6 col-m-12 col-sm-12">
+				<div class="card">
+					<div class="card-header">
+						<h3><i class="fas fa-id-card"></i> Current Details</h3>
+					</div>
+					<div class="card-content">
+						<table>
+							<tbody>
+								<tr>
+									<td><strong><i class="fas fa-user"></i> Username</strong></td>
+									<td>{{ admin_user.username }}</td>
+								</tr>
+								<tr>
+									<td><strong><i class="fas fa-user-tag"></i> First Name</strong></td>
+									<td>{{ admin_user.first_name|default:"Not set" }}</td>
+								</tr>
+								<tr>
+									<td><strong><i class="fas fa-user-tag"></i> Last Name</strong></td>
+									<td>{{ admin_user.last_name|default:"Not set" }}</td>
+								</tr>
+								<tr>
+									<td><strong><i class="fas fa-envelope"></i> Email</strong></td>
+									<td>{{ admin_user.email|default:"Not set" }}</td>
+								</tr>
+								<tr>
+									<td><strong><i class="fas fa-calendar-alt"></i> Date Joined</strong></td>
+									<td>{{ admin_user.date_joined|date:"M d, Y" }}</td>
+								</tr>
+								<tr>
+									<td><strong><i class="fas fa-clock"></i> Last Login</strong></td>
+									<td>{{ admin_user.last_login|date:"M d, Y h:i A" }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<!-- Edit Profile Card -->
+			<div class="col-6 col-m-12 col-sm-12">
+				<div class="card">
+					<div class="card-header">
+						<h3><i class="fas fa-edit"></i> Edit Profile</h3>
+					</div>
+					<div class="card-content">
+						<form method="POST" action="">
+							{% csrf_token %}
+
+							<div style="margin-bottom: 15px;">
+								<label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">
+									<i class="fas fa-user"></i> Username
+								</label>
+								<input type="text" name="username" value="{{ admin_user.username }}" required
+									style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+							</div>
+
+							<div style="margin-bottom: 15px;">
+								<label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">
+									<i class="fas fa-user-tag"></i> First Name
+								</label>
+								<input type="text" name="first_name" value="{{ admin_user.first_name }}"
+									style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+							</div>
+
+							<div style="margin-bottom: 15px;">
+								<label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">
+									<i class="fas fa-user-tag"></i> Last Name
+								</label>
+								<input type="text" name="last_name" value="{{ admin_user.last_name }}"
+									style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+							</div>
+
+							<div style="margin-bottom: 15px;">
+								<label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">
+									<i class="fas fa-envelope"></i> Email
+								</label>
+								<input type="email" name="email" value="{{ admin_user.email }}"
+									style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+							</div>
+
+							<div style="margin-bottom: 20px;">
+								<label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">
+									<i class="fas fa-lock"></i> New Password <small style="color: #6b7280;">(leave blank to keep current)</small>
+								</label>
+								<input type="password" name="password" placeholder="Enter new password"
+									style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+							</div>
+
+							<div style="display: flex; gap: 10px;">
+								<button type="submit" style="padding: 10px 25px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+									<i class="fas fa-save"></i> Save Changes
+								</button>
+								<a href="/admin-dashboard" style="padding: 10px 25px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block;">
+									<i class="fas fa-arrow-left"></i> Back to Dashboard
+								</a>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<br><br><br><br>
+	</div>
+	<!-- end main content -->
+
+{% endblock content %}

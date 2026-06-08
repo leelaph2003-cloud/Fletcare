@@ -561,8 +561,6 @@
 }
 </style>
 
-{% endblock content %}
-
 <script>
 // Email Modal Functions
 function setEmail(email) {
@@ -592,55 +590,50 @@ function closeEmailModal() {
 }
 
 // Close modal when clicking outside
-window.onclick = function(event) {
+window.addEventListener('click', function(event) {
     const modal = document.getElementById('emailModal');
     if (event.target == modal) {
         closeEmailModal();
     }
-}
+});
 
 // Handle form submission
-document.getElementById('emailForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const requestId = document.getElementById('requestId').value;
-    const recipientEmail = document.getElementById('recipientEmail').value;
-    
-    // Validate email
-    if (!recipientEmail) {
-        alert('❌ Please enter a valid email address');
-        document.getElementById('recipientEmail').focus();
-        return;
-    }
-    
-    // Basic email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(recipientEmail)) {
-        alert('❌ Please enter a valid email address format (e.g., user@example.com)');
-        document.getElementById('recipientEmail').focus();
-        return;
-    }
-    
-    // Show loading state
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-    submitBtn.disabled = true;
-    
-    // Send the invoice via email
-    try {
-        window.location.href = `/customer-invoice-email/${requestId}?email=${encodeURIComponent(recipientEmail)}`;
-        
-        // Show success message
-        alert(`✅ Invoice request sent! Check your messages for confirmation.`);
-        
-        // Close modal
-        closeEmailModal();
-    } catch (error) {
-        // Reset button state on error
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        alert('❌ Error sending invoice. Please try again.');
+document.addEventListener('DOMContentLoaded', function() {
+    var emailForm = document.getElementById('emailForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const requestId = document.getElementById('requestId').value;
+            const recipientEmail = document.getElementById('recipientEmail').value;
+            
+            // Validate email
+            if (!recipientEmail) {
+                alert('Please enter a valid email address');
+                document.getElementById('recipientEmail').focus();
+                return;
+            }
+            
+            // Basic email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(recipientEmail)) {
+                alert('Please enter a valid email address format (e.g., user@example.com)');
+                document.getElementById('recipientEmail').focus();
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+            
+            // Send the invoice via email
+            window.location.href = `/customer-invoice-email/${requestId}?email=${encodeURIComponent(recipientEmail)}`;
+        });
     }
 });
 </script>
+
+{% endblock content %}
+

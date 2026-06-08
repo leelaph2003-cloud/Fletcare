@@ -957,6 +957,44 @@ def edit_mechanic_profile_view(request):
 #============================================================================================
 
 
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def admin_profile_view(request):
+    user = request.user
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        if username:
+            # Check if username is taken by another user
+            if User.objects.filter(username=username).exclude(id=user.id).exists():
+                messages.error(request, 'Username already taken. Please choose another.')
+                return render(request, 'vehicle/admin_profile.html', {'admin_user': user})
+            user.username = username
+        if first_name:
+            user.first_name = first_name
+        if last_name:
+            user.last_name = last_name
+        if email:
+            user.email = email
+        if password:
+            user.set_password(password)
+        user.save()
+
+        if password:
+            # Re-login the user after password change
+            login(request, user)
+            messages.success(request, 'Profile updated successfully! Password has been changed.')
+        else:
+            messages.success(request, 'Profile updated successfully!')
+        return redirect('admin-profile')
+
+    return render(request, 'vehicle/admin_profile.html', {'admin_user': user})
+
+
 # for aboutus and contact
 def aboutus_view(request):
     return render(request,'vehicle/aboutus.html')

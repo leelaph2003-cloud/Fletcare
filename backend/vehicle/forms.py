@@ -30,7 +30,7 @@ class MechanicForm(forms.ModelForm):
         fields=['address','mobile','profile_pic','skill']
 
 class MechanicSalaryForm(forms.Form):
-    salary=forms.IntegerField();
+    salary=forms.IntegerField()
 
 
 class RequestForm(forms.ModelForm):

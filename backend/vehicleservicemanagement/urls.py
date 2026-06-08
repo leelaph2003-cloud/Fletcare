@@ -53,7 +53,6 @@ urlpatterns = [
     path('admin-add-mechanic',views.admin_add_mechanic_view,name='admin-add-mechanic'),
     path('admin-approve-mechanic',views.admin_approve_mechanic_view,name='admin-approve-mechanic'),
     path('approve-mechanic/<int:pk>', views.approve_mechanic_view,name='approve-mechanic'),
-    path('delete-mechanic/<int:pk>', views.delete_mechanic_view,name='delete-mechanic'),
     path('admin-view-mechanic-salary',views.admin_view_mechanic_salary_view,name='admin-view-mechanic-salary'),
     path('update-salary/<int:pk>', views.update_salary_view,name='update-salary'),
 
@@ -63,6 +62,7 @@ urlpatterns = [
     path('admin-feedback', views.admin_feedback_view,name='admin-feedback'),
 
     path('admin-report', views.admin_report_view,name='admin-report'),
+    path('admin-profile', views.admin_profile_view,name='admin-profile'),
     
     # Location tracking and KNN URLs
     path('admin-location-tracking', views.admin_location_tracking_view,name='admin-location-tracking'),
