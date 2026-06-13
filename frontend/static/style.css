@@ -466,7 +466,7 @@ body {
 
 .wrapper {
 	padding: 20px;
-	margin-left: 82px;
+	margin-left: 250px;
 	padding-top: 75px;
 	background: var(--second-bg-color);
 	transition: margin-left .5s;
@@ -474,7 +474,7 @@ body {
 }
 
 .sidebar {
-	width: 82px;
+	width: 250px;
 	height: 100vh;
 	position: fixed;
 	margin-top: 65px;
@@ -486,8 +486,18 @@ body {
 	border-right: 1px solid var(--border-color);
 }
 
-.sidebar:hover {
-	width: 82px;
+.content {
+	margin-left: 250px;
+	padding: 20px;
+	padding-top: 85px;
+	background: var(--second-bg-color);
+	min-height: 100vh;
+}
+
+.sidebar-nav-link span {
+	white-space: nowrap;
+	font-size: 15px;
+	font-weight: 500;
 }
 
 .sidebar-nav {
@@ -857,6 +867,16 @@ table th {
 .btn-lg {
 	padding: 12px 24px;
 	font-size: 16px;
+}
+
+.badge {
+	display: inline-block;
+	padding: 4px 10px;
+	font-size: 12px;
+	font-weight: 600;
+	border-radius: 20px;
+	color: white;
+	white-space: nowrap;
 }
 
 /* Form Styles */

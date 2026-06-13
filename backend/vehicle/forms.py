@@ -53,7 +53,7 @@ class AdminRequestForm(forms.Form):
 
 
 class AdminApproveRequestForm(forms.Form):
-    mechanic = forms.ModelChoiceField(queryset=models.Mechanic.objects.all(), empty_label="Mechanic Name", to_field_name='id')
+    mechanic = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Type mechanic name'}))
     cost = forms.IntegerField()
     # FIX: Added all valid statuses including Repairing and Repairing Done
     stat = (

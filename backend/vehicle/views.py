@@ -364,8 +364,21 @@ def change_status_view(request, pk):
     if request.method == 'POST':
         adminenquiry = forms.AdminApproveRequestForm(request.POST)
         if adminenquiry.is_valid():
+            mechanic_name = adminenquiry.cleaned_data['mechanic'].strip()
+            try:
+                mechanic = models.Mechanic.objects.get(user__first_name__iexact=mechanic_name)
+            except models.Mechanic.DoesNotExist:
+                try:
+                    parts = mechanic_name.split()
+                    mechanic = models.Mechanic.objects.get(
+                        user__first_name__iexact=parts[0],
+                        user__last_name__iexact=parts[-1] if len(parts) > 1 else ''
+                    )
+                except models.Mechanic.DoesNotExist:
+                    messages.error(request, f'Mechanic "{mechanic_name}" not found. Please check the name.')
+                    return render(request, 'vehicle/admin_approve_request_details.html', {'adminenquiry': adminenquiry})
             enquiry_x = models.Request.objects.get(id=pk)
-            enquiry_x.mechanic = adminenquiry.cleaned_data['mechanic']
+            enquiry_x.mechanic = mechanic
             enquiry_x.cost = adminenquiry.cleaned_data['cost']
             enquiry_x.status = adminenquiry.cleaned_data['status']
             enquiry_x.save()
@@ -405,8 +418,21 @@ def approve_request_view(request, pk):
     if request.method == 'POST':
         adminenquiry = forms.AdminApproveRequestForm(request.POST)
         if adminenquiry.is_valid():
+            mechanic_name = adminenquiry.cleaned_data['mechanic'].strip()
+            try:
+                mechanic = models.Mechanic.objects.get(user__first_name__iexact=mechanic_name)
+            except models.Mechanic.DoesNotExist:
+                try:
+                    parts = mechanic_name.split()
+                    mechanic = models.Mechanic.objects.get(
+                        user__first_name__iexact=parts[0],
+                        user__last_name__iexact=parts[-1] if len(parts) > 1 else ''
+                    )
+                except models.Mechanic.DoesNotExist:
+                    messages.error(request, f'Mechanic "{mechanic_name}" not found. Please check the name.')
+                    return render(request, 'vehicle/admin_approve_request_details.html', {'adminenquiry': adminenquiry})
             enquiry_x = models.Request.objects.get(id=pk)
-            enquiry_x.mechanic = adminenquiry.cleaned_data['mechanic']
+            enquiry_x.mechanic = mechanic
             enquiry_x.cost = adminenquiry.cleaned_data['cost']
             enquiry_x.status = adminenquiry.cleaned_data['status']
             enquiry_x.save()

@@ -221,6 +221,8 @@
 									<th>Vehicle Model</th>
 									<th>Vehicle Brand</th>
 									<th>Problem Description</th>
+									<th>Status</th>
+									<th>Actions</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -232,6 +234,27 @@
 									<td>{{r.vehicle_model}}</td>
 									<td>{{r.vehicle_brand}}</td>
 									<td>{{r.problem_description}}</td>
+									<td>
+										{% if r.status == 'Pending' %}
+											<span class="badge bg-warning">{{r.status}}</span>
+										{% elif r.status == 'Approved' %}
+											<span class="badge bg-info">{{r.status}}</span>
+										{% elif r.status == 'Repairing' %}
+											<span class="badge bg-primary">{{r.status}}</span>
+										{% elif r.status == 'Repairing Done' %}
+											<span class="badge bg-success">{{r.status}}</span>
+										{% else %}
+											<span class="badge bg-success">{{r.status}}</span>
+										{% endif %}
+									</td>
+									<td>
+										<a href="{% url 'change-status' r.id %}" class="btn btn-success btn-sm" title="Accept / Change Status" style="margin-right: 5px;">
+											<i class="fas fa-check"></i> Accept
+										</a>
+										<a href="{% url 'admin-delete-request' r.id %}" class="btn btn-danger btn-sm" title="Remove Request" onclick="return confirm('Are you sure you want to remove this request?');">
+											<i class="fas fa-trash"></i> Remove
+										</a>
+									</td>
 								</tr>
 								{% endfor %}
 							</tbody>

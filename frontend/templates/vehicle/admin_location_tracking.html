@@ -74,6 +74,36 @@
         </div>
     </div>
 
+    <!-- LIVE MAP SECTION -->
+    <div class="map-section" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem;">
+                <i class="fas fa-globe-asia"></i> Live Location Map
+            </h2>
+            <div style="display: flex; gap: 0.5rem;">
+                <button onclick="detectMyLocation()" class="btn btn-primary btn-sm" id="detectLocationBtn">
+                    <i class="fas fa-crosshairs"></i> My Location
+                </button>
+                <button onclick="refreshMapData()" class="btn btn-success btn-sm">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-bottom: 0.8rem; flex-wrap: wrap;">
+            <span style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: #374151;">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span> Customers
+            </span>
+            <span style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: #374151;">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span> Mechanics
+            </span>
+            <span style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: #374151;">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span> You (Admin)
+            </span>
+            <span id="locationStatus" style="margin-left: auto; font-size: 0.8rem; color: #6b7280;"></span>
+        </div>
+        <div id="liveMap" style="height: 450px; border-radius: 10px; border: 2px solid #e5e7eb; z-index: 1;"></div>
+    </div>
+
     <!-- Location Update Forms -->
     <div class="update-forms">
         <div class="form-section">
@@ -92,16 +122,21 @@
                     </div>
                     <div class="form-group">
                         <label>Latitude:</label>
-                        <input type="number" step="0.000001" name="latitude" placeholder="e.g., 12.9716" required>
+                        <input type="number" step="0.000001" name="latitude" id="cust_lat" placeholder="e.g., 12.9716" required>
                     </div>
                     <div class="form-group">
                         <label>Longitude:</label>
-                        <input type="number" step="0.000001" name="longitude" placeholder="e.g., 77.5946" required>
+                        <input type="number" step="0.000001" name="longitude" id="cust_lng" placeholder="e.g., 77.5946" required>
                     </div>
                 </div>
-                <button type="submit" name="update_customer" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Update Customer Location
-                </button>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button type="button" onclick="fillMyLocation('cust_lat','cust_lng')" class="btn btn-info btn-sm">
+                        <i class="fas fa-location-arrow"></i> Use My Location
+                    </button>
+                    <button type="submit" name="update_customer" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Customer Location
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -121,16 +156,21 @@
                     </div>
                     <div class="form-group">
                         <label>Latitude:</label>
-                        <input type="number" step="0.000001" name="latitude" placeholder="e.g., 12.9716" required>
+                        <input type="number" step="0.000001" name="latitude" id="mech_lat" placeholder="e.g., 12.9716" required>
                     </div>
                     <div class="form-group">
                         <label>Longitude:</label>
-                        <input type="number" step="0.000001" name="longitude" placeholder="e.g., 77.5946" required>
+                        <input type="number" step="0.000001" name="longitude" id="mech_lng" placeholder="e.g., 77.5946" required>
                     </div>
                 </div>
-                <button type="submit" name="update_mechanic" class="btn btn-success">
-                    <i class="fas fa-save"></i> Update Mechanic Location
-                </button>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button type="button" onclick="fillMyLocation('mech_lat','mech_lng')" class="btn btn-info btn-sm">
+                        <i class="fas fa-location-arrow"></i> Use My Location
+                    </button>
+                    <button type="submit" name="update_mechanic" class="btn btn-success">
+                        <i class="fas fa-save"></i> Update Mechanic Location
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -870,12 +910,152 @@ window.onclick = function(event) {
         closeNavigationModal();
     }
 }
-
-// Auto-refresh location data every 30 seconds
-        setInterval(function() {
-    // You can implement AJAX refresh here
-    console.log('Refreshing location data...');
-}, 30000);
     </script>
+
+<!-- Leaflet.js CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ===== LIVE MAP INITIALIZATION =====
+var map = L.map('liveMap').setView([12.9716, 77.5946], 12); // Default: Bangalore
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(map);
+
+// Custom marker icons
+var customerIcon = L.divIcon({
+    html: '<div style="background:#3b82f6;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user" style="color:white;font-size:12px;"></i></div>',
+    className: '',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
+});
+
+var mechanicIcon = L.divIcon({
+    html: '<div style="background:#10b981;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><i class="fas fa-wrench" style="color:white;font-size:12px;"></i></div>',
+    className: '',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
+});
+
+var adminIcon = L.divIcon({
+    html: '<div style="background:#ef4444;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;animation:pulse 2s infinite;"><i class="fas fa-user-shield" style="color:white;font-size:14px;"></i></div>',
+    className: '',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -18]
+});
+
+// Add pulse animation
+var style = document.createElement('style');
+style.textContent = '@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.5)}70%{box-shadow:0 0 0 15px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}';
+document.head.appendChild(style);
+
+var markers = [];
+var adminMarker = null;
+
+// Add customer markers from database
+{% for customer in customers %}
+{% if customer.current_latitude and customer.current_longitude %}
+(function(){
+    var m = L.marker([{{ customer.current_latitude }}, {{ customer.current_longitude }}], {icon: customerIcon}).addTo(map);
+    m.bindPopup('<div style="min-width:180px;"><strong style="color:#3b82f6;"><i class="fas fa-user"></i> {{ customer.get_name }}</strong><br><i class="fas fa-phone"></i> {{ customer.mobile }}<br><i class="fas fa-map-pin"></i> {{ customer.current_latitude }}, {{ customer.current_longitude }}<br><small style="color:#6b7280;">Customer</small></div>');
+    markers.push(m);
+})();
+{% endif %}
+{% endfor %}
+
+// Add mechanic markers from database
+{% for mechanic in mechanics %}
+{% if mechanic.current_latitude and mechanic.current_longitude %}
+(function(){
+    var m = L.marker([{{ mechanic.current_latitude }}, {{ mechanic.current_longitude }}], {icon: mechanicIcon}).addTo(map);
+    m.bindPopup('<div style="min-width:180px;"><strong style="color:#10b981;"><i class="fas fa-wrench"></i> {{ mechanic.get_name }}</strong><br><i class="fas fa-phone"></i> {{ mechanic.mobile }}<br><i class="fas fa-cogs"></i> {{ mechanic.skill }}<br><i class="fas fa-map-pin"></i> {{ mechanic.current_latitude }}, {{ mechanic.current_longitude }}<br><small style="color:#6b7280;">Mechanic</small></div>');
+    markers.push(m);
+})();
+{% endif %}
+{% endfor %}
+
+// Fit map to show all markers
+if (markers.length > 0) {
+    var group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.2));
+}
+
+// Detect admin's live location
+function detectMyLocation() {
+    var btn = document.getElementById('detectLocationBtn');
+    var statusEl = document.getElementById('locationStatus');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+    statusEl.textContent = 'Detecting your location...';
+
+    if (!navigator.geolocation) {
+        statusEl.textContent = 'Geolocation not supported by your browser';
+        btn.innerHTML = '<i class="fas fa-crosshairs"></i> My Location';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+
+            // Remove old admin marker
+            if (adminMarker) map.removeLayer(adminMarker);
+
+            // Add admin marker
+            adminMarker = L.marker([lat, lng], {icon: adminIcon}).addTo(map);
+            adminMarker.bindPopup('<div style="min-width:180px;"><strong style="color:#ef4444;"><i class="fas fa-user-shield"></i> You (Admin)</strong><br><i class="fas fa-map-pin"></i> ' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '<br><small style="color:#6b7280;">Live location</small></div>').openPopup();
+
+            // Center map on admin
+            map.setView([lat, lng], 14);
+
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> My Location';
+            statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> Location detected: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+        },
+        function(error) {
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> My Location';
+            statusEl.textContent = 'Location error: ' + error.message;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// Fill lat/lng fields with current GPS location
+function fillMyLocation(latId, lngId) {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            document.getElementById(latId).value = position.coords.latitude.toFixed(6);
+            document.getElementById(lngId).value = position.coords.longitude.toFixed(6);
+        },
+        function(error) {
+            alert('Could not get location: ' + error.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// Refresh map by reloading page
+function refreshMapData() {
+    location.reload();
+}
+
+// Auto-detect admin location on page load
+detectMyLocation();
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    detectMyLocation();
+    console.log('Location refreshed');
+}, 30000);
+</script>
 </div>
 {% endblock content %}

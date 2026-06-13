@@ -174,19 +174,27 @@
 		</div>
 		{% endif %}
 
-		<!-- Recent Activity Section -->
+		<!-- Live Location Map -->
 		<div class="row" style="margin-top: 2rem;">
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">
-						<h3><i class="fas fa-history"></i> Recent Activity</h3>
+						<h3><i class="fas fa-map-marked-alt"></i> Your Live Location</h3>
 					</div>
 					<div class="card-content">
-						<div class="empty-state">
-							<i class="fas fa-chart-line"></i>
-							<h3>Welcome to your dashboard!</h3>
-							<p>Your recent vehicle service activities will appear here.</p>
+						<div style="display: flex; gap: 1rem; margin-bottom: 0.8rem; flex-wrap: wrap; align-items: center;">
+							<span style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;">
+								<span style="width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span> You
+							</span>
+							<span style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;">
+								<span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span> Mechanics
+							</span>
+							<button onclick="detectCustomerLocation()" class="btn btn-primary btn-sm" id="custLocBtn" style="margin-left: auto;">
+								<i class="fas fa-crosshairs"></i> Detect My Location
+							</button>
+							<span id="custLocStatus" style="font-size: 0.8rem; color: #6b7280;"></span>
 						</div>
+						<div id="customerMap" style="height: 400px; border-radius: 10px; border: 2px solid #e5e7eb;"></div>
 					</div>
 				</div>
 			</div>
@@ -196,4 +204,84 @@
 
 	</div>
 	<!-- end main content -->
+
+<!-- Leaflet.js CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+var custMap = L.map('customerMap').setView([12.9716, 77.5946], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(custMap);
+
+var custIcon = L.divIcon({
+    html: '<div style="background:#3b82f6;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;animation:custPulse 2s infinite;"><i class="fas fa-user" style="color:white;font-size:14px;"></i></div>',
+    className: '', iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18]
+});
+
+var mechIcon = L.divIcon({
+    html: '<div style="background:#10b981;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><i class="fas fa-wrench" style="color:white;font-size:12px;"></i></div>',
+    className: '', iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -16]
+});
+
+var pulseStyle = document.createElement('style');
+pulseStyle.textContent = '@keyframes custPulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,0.5)}70%{box-shadow:0 0 0 15px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}';
+document.head.appendChild(pulseStyle);
+
+var custMarker = null;
+
+// Add nearby mechanic markers
+{% for mechanic, distance in nearest_mechanics %}
+(function(){
+    var m = L.marker([{{ mechanic.current_latitude }}, {{ mechanic.current_longitude }}], {icon: mechIcon}).addTo(custMap);
+    m.bindPopup('<div style="min-width:180px;"><strong style="color:#10b981;"><i class="fas fa-wrench"></i> {{ mechanic.get_name }}</strong><br><i class="fas fa-phone"></i> {{ mechanic.mobile }}<br><i class="fas fa-road"></i> {{ distance|floatformat:1 }} km away<br><small style="color:#6b7280;">Mechanic</small></div>');
+})();
+{% endfor %}
+
+function detectCustomerLocation() {
+    var btn = document.getElementById('custLocBtn');
+    var statusEl = document.getElementById('custLocStatus');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+    statusEl.textContent = 'Detecting...';
+
+    if (!navigator.geolocation) {
+        statusEl.textContent = 'Geolocation not supported';
+        btn.innerHTML = '<i class="fas fa-crosshairs"></i> Detect My Location';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            var lat = pos.coords.latitude, lng = pos.coords.longitude;
+            if (custMarker) custMap.removeLayer(custMarker);
+            custMarker = L.marker([lat, lng], {icon: custIcon}).addTo(custMap);
+            custMarker.bindPopup('<div><strong style="color:#3b82f6;"><i class="fas fa-user"></i> Your Location</strong><br>' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '</div>').openPopup();
+            custMap.setView([lat, lng], 14);
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> Detect My Location';
+            statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> Located: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+
+            // Send location to server
+            fetch('/update-customer-location/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({customer_id: {{ customer.id }}, latitude: lat, longitude: lng})
+            }).catch(function(){});
+        },
+        function(err) {
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> Detect My Location';
+            statusEl.textContent = 'Error: ' + err.message;
+        },
+        {enableHighAccuracy: true, timeout: 10000}
+    );
+}
+
+// Auto-detect on page load
+detectCustomerLocation();
+
+// Refresh location every 30 seconds
+setInterval(detectCustomerLocation, 30000);
+</script>
 {% endblock content %}

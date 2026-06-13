@@ -40,6 +40,14 @@
   <form method="post" style="margin-left:200px;margin-right:200px;">
       {% csrf_token %}
 
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" style="padding: 12px; margin-bottom: 16px; border-radius: 6px;">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
     <label for="cost">Repair Cost</label>
     {% render_field adminenquiry.cost class="form-control" placeholder="Repair Cost" %}
 

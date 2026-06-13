@@ -215,11 +215,12 @@
             <p class="location-subtitle">Using KNN algorithm to find the closest 4 available mechanics</p>
         </div>
         
-        <div class="location-info">
-            <h3><i class="fas fa-map-marker-alt"></i> Your Current Location</h3>
-            <div class="coordinates">
-                Lat: {{ customer_location.latitude|floatformat:6 }}, Lon: {{ customer_location.longitude|floatformat:6 }}
+        <div class="location-info" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1rem; background: var(--light-color);">
+                <h3><i class="fas fa-map-marker-alt"></i> Your Current Location</h3>
+                <span id="locStatus" style="font-size: 0.9rem; color: #6b7280;"></span>
             </div>
+            <div id="findMap" style="height: 350px; width: 100%;"></div>
         </div>
         
         {% if nearest_mechanics %}
@@ -278,37 +279,119 @@
             </div>
         {% endif %}
     </div>
+
+    <!-- Leaflet.js -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        // Initialize map
+        var map = L.map('findMap').setView([12.9716, 77.5946], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        var customerIcon = L.divIcon({
+            html: '<div style="background:#3b82f6;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;animation:pulse 2s infinite;"><i class="fas fa-user" style="color:white;font-size:14px;"></i></div>',
+            className: '', iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18]
+        });
+
+        var mechMarkerIcon = L.divIcon({
+            html: '<div style="background:#10b981;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><i class="fas fa-wrench" style="color:white;font-size:12px;"></i></div>',
+            className: '', iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -16]
+        });
+
+        // Pulse animation
+        var s = document.createElement('style');
+        s.textContent = '@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,0.5)}70%{box-shadow:0 0 0 15px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}';
+        document.head.appendChild(s);
+
+        var allMarkers = [];
+        var myMarker = null;
+
+        // Add mechanic markers
+        {% for mechanic, distance in nearest_mechanics %}
+        {% if mechanic.current_latitude and mechanic.current_longitude %}
+        (function(){
+            var m = L.marker([{{ mechanic.current_latitude }}, {{ mechanic.current_longitude }}], {icon: mechMarkerIcon}).addTo(map);
+            m.bindPopup('<div style="min-width:180px;"><strong style="color:#10b981;"><i class="fas fa-wrench"></i> {{ mechanic.get_name }}</strong><br><i class="fas fa-phone"></i> {{ mechanic.mobile }}<br><i class="fas fa-road"></i> {{ distance|floatformat:1 }} km away<br><i class="fas fa-cogs"></i> {{ mechanic.skill }}<br><a href="tel:{{ mechanic.mobile }}" style="color:#3b82f6;">Call Now</a></div>');
+            allMarkers.push(m);
+        })();
+        {% endif %}
+        {% endfor %}
+
+        // Show customer location from database or detect
+        {% if customer_location %}
+        myMarker = L.marker([{{ customer_location.latitude }}, {{ customer_location.longitude }}], {icon: customerIcon}).addTo(map);
+        myMarker.bindPopup('<div><strong style="color:#3b82f6;"><i class="fas fa-user"></i> Your Location</strong><br>{{ customer_location.latitude|floatformat:6 }}, {{ customer_location.longitude|floatformat:6 }}</div>').openPopup();
+        allMarkers.push(myMarker);
+        map.setView([{{ customer_location.latitude }}, {{ customer_location.longitude }}], 13);
+        document.getElementById('locStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> Lat: {{ customer_location.latitude|floatformat:6 }}, Lon: {{ customer_location.longitude|floatformat:6 }}';
+        {% endif %}
+
+        // Fit to all markers
+        if (allMarkers.length > 1) {
+            map.fitBounds(L.featureGroup(allMarkers).getBounds().pad(0.3));
+        }
+
+        // Reverse geocode to get place name
+        function getPlaceName(lat, lng, callback) {
+            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=16&addressdetails=1')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var name = data.display_name || (lat.toFixed(6) + ', ' + lng.toFixed(6));
+                    // Shorten: take first 3 parts
+                    var parts = name.split(',');
+                    var short = parts.slice(0, 3).join(',').trim();
+                    callback(short, name);
+                })
+                .catch(function() {
+                    callback(lat.toFixed(6) + ', ' + lng.toFixed(6), '');
+                });
+        }
+
+        // Auto-detect live location
+        function detectAndShow() {
+            if (!navigator.geolocation) return;
+
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                var lat = pos.coords.latitude, lng = pos.coords.longitude;
+                if (myMarker) map.removeLayer(myMarker);
+                myMarker = L.marker([lat, lng], {icon: customerIcon}).addTo(map);
+
+                // Get place name
+                getPlaceName(lat, lng, function(shortName, fullName) {
+                    myMarker.bindPopup(
+                        '<div style="min-width:200px;">' +
+                        '<strong style="color:#3b82f6;"><i class="fas fa-user"></i> Your Live Location</strong><br>' +
+                        '<i class="fas fa-map-marker-alt" style="color:#ef4444;"></i> <b>' + shortName + '</b><br>' +
+                        '<small style="color:#6b7280;">' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '</small>' +
+                        '</div>'
+                    ).openPopup();
+
+                    document.getElementById('locStatus').innerHTML =
+                        '<i class="fas fa-check-circle" style="color:#10b981;"></i> <b>' + shortName + '</b>';
+                });
+
+                if (allMarkers.length === 0) {
+                    map.setView([lat, lng], 14);
+                }
+            });
+        }
+
+        // Run on page load
+        detectAndShow();
+
         function requestService(mechanicId) {
             if (confirm('Are you sure you want to request service from this mechanic?')) {
-                // Redirect to service request page with mechanic pre-selected
                 window.location.href = `/customer-add-request?mechanic=${mechanicId}`;
             }
         }
-        
+
         // Auto-refresh location every 30 seconds
-        setInterval(function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    updateLocation(position.coords.latitude, position.coords.longitude);
-                });
-            }
-        }, 30000);
-        
-        function updateLocation(lat, lon) {
-            fetch('/update-customer-location', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    customer_id: {{ request.user.customer.id }},
-                    latitude: lat,
-                    longitude: lon
-                })
-            });
-        }
+        setInterval(detectAndShow, 30000);
     </script>
 </body>
 </html> 
